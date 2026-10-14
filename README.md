@@ -3,6 +3,7 @@
 One-click UI audits inside Figma. Select a frame, a component or a whole page and Uki scores it out of 100 across six categories, lists every issue with the layer it lives on, and fixes the common ones in one click.
 
 Community page: https://www.figma.com/community/plugin/1484499033305449577
+Website: https://kamal007olica.github.io/uki-ai/ (source in `site/`, deployed by GitHub Pages on every push to `main`)
 
 ## What it checks
 
