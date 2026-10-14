@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Uki AI — a design review for every Figma frame</title>
+    <title>Uki AI · A design review for every Figma frame</title>
     <meta name="description" content="Uki AI is a Figma plugin that audits any frame in one click: contrast, type scale, grid, tap targets, naming and consistency, scored out of 100 with one-click fixes." />
     <meta name="theme-color" content="#0c0e0b" />
     <meta property="og:title" content="Uki AI" />
@@ -58,7 +58,7 @@
                 <div class="pn-hero" data-target="score">
                   <div class="pn-ring">
                     <svg viewBox="0 0 36 36"><circle class="track" cx="18" cy="18" r="15.9" /><circle class="bar" id="pn-ring" cx="18" cy="18" r="15.9" /></svg>
-                    <div class="pn-num"><b id="pn-score">—</b><span id="pn-grade">score</span></div>
+                    <div class="pn-num"><b id="pn-score" class="idle">✦</b><span id="pn-grade">score</span></div>
                   </div>
                   <div class="pn-head-copy">
                     <h3 id="pn-headline">Audit any frame in one click.</h3>
@@ -66,12 +66,12 @@
                   </div>
                 </div>
                 <ol class="pn-cats" id="pn-cats">
-                  <li><span>Colour scheme</span><span class="t"><i data-score="61"></i></span><b>—</b></li>
-                  <li><span>Typography</span><span class="t"><i data-score="84"></i></span><b>—</b></li>
-                  <li><span>Layout</span><span class="t"><i data-score="70"></i></span><b>—</b></li>
-                  <li><span>Visual design</span><span class="t"><i data-score="92"></i></span><b>—</b></li>
-                  <li><span>Navigation</span><span class="t"><i data-score="77"></i></span><b>—</b></li>
-                  <li><span>Interaction</span><span class="t"><i data-score="58"></i></span><b>—</b></li>
+                  <li><span>Colour scheme</span><span class="t"><i data-score="61"></i></span><b></b></li>
+                  <li><span>Typography</span><span class="t"><i data-score="84"></i></span><b></b></li>
+                  <li><span>Layout</span><span class="t"><i data-score="70"></i></span><b></b></li>
+                  <li><span>Visual design</span><span class="t"><i data-score="92"></i></span><b></b></li>
+                  <li><span>Navigation</span><span class="t"><i data-score="77"></i></span><b></b></li>
+                  <li><span>Interaction</span><span class="t"><i data-score="58"></i></span><b></b></li>
                 </ol>
                 <ul class="pn-issues" id="pn-issues">
                   <li class="high" data-target="issue"><i></i><div><h4>Low text contrast <span>· Caption</span></h4><p>3.1:1 for #9A9AA8 on #F7F7FA. AA needs 4.5:1.</p></div><button type="button" class="pn-fix" id="pn-fix" data-target="fix">Fix contrast</button></li>
@@ -220,7 +220,8 @@
           </p>
           <div class="win prompt">
             <div class="win-bar"><span>share with your team</span><button type="button" class="copy-btn" id="copy">copy</button></div>
-            <pre id="prompt-text">Run Uki AI UI Auditor on the frame before you request review: https://www.figma.com/community/plugin/1484499033305449577 — aim for 80 or above, and fix every high.</pre>
+            <pre id="prompt-text">Run Uki AI UI Auditor on the frame before you request review: https://www.figma.com/community/plugin/1484499033305449577
+Aim for 80 or above, and fix every high.</pre>
           </div>
           <p class="warning">
             Audits run inside Figma and nothing leaves your file. The optional Uki AI review only sends scores and issue text, and only when you add your own API key in Settings.

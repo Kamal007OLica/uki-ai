@@ -135,7 +135,7 @@
 
   const canvas = document.getElementById("sky");
   const ctx = canvas.getContext("2d", { alpha: false });
-  const CHARS = " ·.:-=+*#%@";
+  const CHARS = " ··:•+*✧✦";
   let dpr = 1;
   let W = innerWidth;
   let H = innerHeight;
@@ -338,7 +338,8 @@
     }
 
     function setScore(n, cat) {
-      scoreEl.textContent = n === null ? "—" : n;
+      scoreEl.textContent = n === null ? "✦" : n;
+      scoreEl.classList.toggle("idle", n === null);
       gradeEl.textContent = n === null ? "score" : `grade ${n >= 90 ? "A" : n >= 80 ? "B" : n >= 70 ? "C" : "D"}`;
       el.style.setProperty("--pn-ring", n === null ? 100 : 100 - n);
       el.style.setProperty("--pn-ring-color", colorFor(n || 0));
@@ -347,7 +348,7 @@
         const bar = li.querySelector("i");
         bar.style.width = v === null ? "0%" : v + "%";
         bar.style.background = colorFor(v || 0);
-        li.querySelector("b").textContent = v === null ? "—" : v;
+        li.querySelector("b").textContent = v === null ? "" : v;
       });
     }
 
@@ -437,7 +438,7 @@
   let lastFrame = 0;
   let paused = false;
 
-  function drawSky(pal, now) {
+  function drawSky(pal, now, dim) {
     const t = now / 1000;
     ctx.fillStyle = css(pal.top);
     ctx.fillRect(0, 0, W, H);
@@ -446,16 +447,20 @@
       const ky = y / Math.max(1, rows - 1);
       const sky = mixC(pal.top, pal.bottom, ky);
       const shades = [];
-      for (let q = 0; q < 6; q++) shades.push(css(mixC(sky, pal.cloud, (q / 5) * 0.85)));
+      for (let q = 0; q < 6; q++) shades.push(css(mixC(sky, pal.cloud, (q / 5) * 0.9)));
       shadeCache.push(shades);
     }
     for (let y = 0; y < rows; y++) {
       const yy = y * cellH;
       for (let x = 0; x < cols; x++) {
         let b = clouds(x, y, t);
-        b = clamp01((b - 0.35) * 1.9);
+        b = clamp01((b - 0.4) * 1.9);
+        // Brighter dust near the mark, calmer at the edges, calmer still once the page is past the hero.
+        const dx = (x * cellW - W / 2) / W;
+        const dy = (yy - H * 0.42) / H;
+        b *= (0.45 + 0.75 * Math.exp(-(dx * dx * 5 + dy * dy * 7))) * dim;
         if (wake.length) b *= 1 - clearing(x * cellW, yy, now);
-        if (b < 0.06) continue;
+        if (b < 0.08) continue;
         const q = Math.min(5, Math.floor(b * 6));
         ctx.fillStyle = shadeCache[y][q];
         ctx.fillText(CHARS[Math.min(CHARS.length - 1, Math.floor(b * (CHARS.length - 1)) + 1)], x * cellW, yy);
@@ -479,7 +484,7 @@
     const fps = motionQuery.matches ? 1 : sc < stage.offsetHeight ? 24 : 8;
     if (now - lastFrame < 1000 / fps) return;
     lastFrame = now;
-    if (!paused) drawSky(pal, now);
+    if (!paused) drawSky(pal, now, 1 - 0.45 * clamp01((sc - stage.offsetHeight + H) / H));
   }
 
   document.addEventListener("visibilitychange", () => (paused = document.hidden));

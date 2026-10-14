@@ -106,12 +106,12 @@ a {
 
 .bar-top {
   top: 0;
-  border-bottom: 1px dashed color-mix(in srgb, var(--ink) 32%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 16%, transparent);
 }
 
 .bar-bottom {
   bottom: 0;
-  border-top: 1px dashed color-mix(in srgb, var(--ink) 32%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--ink) 16%, transparent);
 }
 
 .brand {
@@ -222,6 +222,20 @@ main {
   height: 100vh;
   height: 100lvh;
   pointer-events: none;
+}
+
+/* A soft pool of light behind the mark, so it reads as the source of the dust. */
+.stage-pin::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  width: min(70vw, 760px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--glow), transparent 70%);
+  opacity: 0.9;
 }
 
 .hero-art {
@@ -337,8 +351,8 @@ main {
   -webkit-backdrop-filter: blur(14px) saturate(1.25);
   backdrop-filter: blur(14px) saturate(1.25);
   border: 1px solid var(--rim);
-  border-radius: 6px;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  border-radius: 12px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 236, 180, 0.08);
   overflow: hidden;
 }
 
@@ -348,7 +362,7 @@ main {
   align-items: center;
   gap: 12px;
   padding: 9px 16px;
-  border-bottom: 1px dashed var(--rim);
+  border-bottom: 1px solid color-mix(in srgb, var(--rim) 70%, transparent);
   font-size: 12px;
   color: var(--muted);
 }
@@ -748,6 +762,11 @@ code {
   font-variant-numeric: tabular-nums;
 }
 
+.pn-num b.idle {
+  color: #f0c75e;
+  font-size: 26px;
+}
+
 .pn-num span {
   font-size: 8px;
   color: #6d6d7a;
@@ -999,8 +1018,9 @@ code {
   right: 6px;
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(13, 15, 12, 0.94);
+  background: #0d0f0c;
   color: var(--yellow);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
   font: 500 11px / 1.5 var(--mono);
   letter-spacing: 0.04em;
   white-space: nowrap;
@@ -1287,7 +1307,7 @@ code {
   padding: 16px 20px;
   border-left: 3px solid var(--yellow);
   background: rgba(22, 18, 8, 0.64);
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 10px 10px 0;
   font-size: 14px;
 }
 
