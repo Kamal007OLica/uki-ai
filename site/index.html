@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Uki AI — a design review for every Figma frame</title>
+    <meta name="description" content="Uki AI is a Figma plugin that audits any frame in one click: contrast, type scale, grid, tap targets, naming and consistency, scored out of 100 with one-click fixes." />
+    <meta name="theme-color" content="#0c0e0b" />
+    <meta property="og:title" content="Uki AI" />
+    <meta property="og:description" content="A design review for every frame." />
+    <meta property="og:url" content="https://www.figma.com/community/plugin/1484499033305449577" />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <canvas id="sky" aria-hidden="true"></canvas>
+
+    <header class="bar bar-top">
+      <a class="brand" href="#top"><svg class="spark" data-spark="mirror" aria-hidden="true"></svg><span>uki</span></a>
+      <nav class="bar-right">
+        <span class="path" id="path">~/canvas</span>
+        <a class="li" href="https://www.linkedin.com/in/kamalraaj07" target="_blank" rel="noopener" aria-label="Kamal on LinkedIn">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.3 5.5h2.4V14H2.3zM3.5 1.5a1.4 1.4 0 1 1 0 2.8 1.4 1.4 0 0 1 0-2.8zM6.3 5.5h2.3v1.2c.4-.7 1.3-1.4 2.7-1.4 2.6 0 3.1 1.7 3.1 4V14H12V9.8c0-1-.1-2.3-1.5-2.3s-1.7 1.1-1.7 2.2V14H6.3z" /></svg>
+          <span>kamalraaj07</span>
+        </a>
+        <a class="cta" href="https://www.figma.com/community/plugin/1484499033305449577" target="_blank" rel="noopener">Open in Figma</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="stage" id="top">
+        <div class="stage-pin">
+          <h1 class="visually-hidden">Uki AI audits any Figma frame in one click</h1>
+          <svg class="hero-art" id="hero-art" aria-hidden="true">
+            <g id="hero-spark"></g>
+            <text id="hero-word">Uki</text>
+          </svg>
+          <p class="tagline" id="tagline">A design review for every frame.</p>
+          <p class="cue" id="cue" aria-hidden="true"><span>scroll to light it</span><span class="cue-arrow">↓</span></p>
+        </div>
+      </section>
+
+      <section class="pill-stage" id="panel" data-path="~/plugin" aria-label="The plugin panel">
+        <div class="pill-pin">
+          <p class="pill-label"><span class="num">01</span> the panel</p>
+          <div class="pill-zone">
+            <div class="panel" id="uki-panel">
+              <div class="pn-head">
+                <span class="pn-logo"><svg class="spark" data-spark="mirror" aria-hidden="true"></svg></span>
+                <span class="pn-title">Uki AI <small>UI Auditor</small></span>
+                <span class="pn-scope"><b>Selection</b><i>Page</i></span>
+                <button class="pn-run" id="pn-run" type="button" data-target="run"><span class="dot"></span><span id="pn-run-label">Audit</span></button>
+              </div>
+              <div class="pn-sel" id="pn-sel" data-target="sel"><span class="pn-sel-empty">Nothing selected. Select a frame.</span><span class="pn-sel-on">Selected: <b>Checkout / Payment</b></span></div>
+              <div class="pn-progress"><i id="pn-progress"></i></div>
+              <div class="pn-tabs"><span class="on">Overview</span><span>Issues <em id="pn-count">0</em></span><span>Settings</span></div>
+              <div class="pn-body">
+                <div class="pn-hero" data-target="score">
+                  <div class="pn-ring">
+                    <svg viewBox="0 0 36 36"><circle class="track" cx="18" cy="18" r="15.9" /><circle class="bar" id="pn-ring" cx="18" cy="18" r="15.9" /></svg>
+                    <div class="pn-num"><b id="pn-score">—</b><span id="pn-grade">score</span></div>
+                  </div>
+                  <div class="pn-head-copy">
+                    <h3 id="pn-headline">Audit any frame in one click.</h3>
+                    <p id="pn-sub">Six scores, one number, every issue on its layer.</p>
+                  </div>
+                </div>
+                <ol class="pn-cats" id="pn-cats">
+                  <li><span>Colour scheme</span><span class="t"><i data-score="61"></i></span><b>—</b></li>
+                  <li><span>Typography</span><span class="t"><i data-score="84"></i></span><b>—</b></li>
+                  <li><span>Layout</span><span class="t"><i data-score="70"></i></span><b>—</b></li>
+                  <li><span>Visual design</span><span class="t"><i data-score="92"></i></span><b>—</b></li>
+                  <li><span>Navigation</span><span class="t"><i data-score="77"></i></span><b>—</b></li>
+                  <li><span>Interaction</span><span class="t"><i data-score="58"></i></span><b>—</b></li>
+                </ol>
+                <ul class="pn-issues" id="pn-issues">
+                  <li class="high" data-target="issue"><i></i><div><h4>Low text contrast <span>· Caption</span></h4><p>3.1:1 for #9A9AA8 on #F7F7FA. AA needs 4.5:1.</p></div><button type="button" class="pn-fix" id="pn-fix" data-target="fix">Fix contrast</button></li>
+                  <li class="medium"><i></i><div><h4>Small tap target <span>· Icon / Close</span></h4><p>32×32px. Needs 44×44.</p></div><button type="button" class="pn-fix">Enlarge</button></li>
+                  <li class="low"><i></i><div><h4>Off the 8pt grid <span>· Card</span></h4><p>height 143. Snap keeps rhythm.</p></div><button type="button" class="pn-fix">Snap</button></li>
+                </ul>
+                <div class="pn-ai" id="pn-ai" data-target="ai">
+                  <div class="pn-ai-bar"><b>Uki AI review</b><span>claude-opus-5-5</span></div>
+                  <div class="pn-ai-body" id="pn-ai-body">
+                    <h5>What to fix first</h5>
+                    <ul><li>Lift <b>Caption</b> to #5E5E6E: 4.7:1 and still quiet.</li><li>Give <b>Icon / Close</b> a 44px hit area; keep the glyph at 16.</li></ul>
+                    <h5>Pattern</h5>
+                    <p>Spacing drifts because the card stack is hand-positioned. Auto layout with an 8pt gap fixes three issues at once.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="pill-track" id="pill-track">
+            <article class="pill-step"><h2>Select a frame.</h2><p>A screen, a component or the whole page.</p></article>
+            <article class="pill-step"><h2>Press Audit.</h2><p>184 layers walked in well under a second, inside Figma.</p></article>
+            <article class="pill-step"><h2>Six scores, one number.</h2><p>Colour, type, layout, visual, navigation and interaction, out of 100.</p></article>
+            <article class="pill-step"><h2>Click an issue.</h2><p>Figma selects the layer and zooms to it.</p></article>
+            <article class="pill-step"><h2>Fix it in one click.</h2><p>The audit re-runs and the score moves while you watch.</p></article>
+            <article class="pill-step"><h2>Ask Uki AI.</h2><p>With your own key, a short review of what to fix first.</p></article>
+          </div>
+          <div class="pill-foot">
+            <ol class="pill-dots" id="pill-dots">
+              <li><button type="button" data-step="0" aria-label="Step 1">01</button></li>
+              <li><button type="button" data-step="1" aria-label="Step 2">02</button></li>
+              <li><button type="button" data-step="2" aria-label="Step 3">03</button></li>
+              <li><button type="button" data-step="3" aria-label="Step 4">04</button></li>
+              <li><button type="button" data-step="4" aria-label="Step 5">05</button></li>
+              <li><button type="button" data-step="5" aria-label="Step 6">06</button></li>
+            </ol>
+            <p class="pill-hint">scroll to play it</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="checks" data-path="~/audit-log">
+        <div class="wrap split flip">
+          <div class="copy">
+            <p class="num">02</p>
+            <h2>What it checks.<br />Every layer.</h2>
+            <p>Uki walks the frame and reads the real values: composited backgrounds, text runs, auto layout padding, prototype links. No screenshots, no guessing.</p>
+            <p class="fine">Hidden layers are skipped and counted. Images and gradients behind text are left for your eyes.</p>
+          </div>
+          <div class="win">
+            <div class="win-bar"><span>audit.log</span><span>Checkout / Payment</span></div>
+            <ol class="log reveal">
+              <li class="ev"><span>audit started</span><time>184 layers</time></li>
+              <li><span>text contrast</span><b>3.1:1</b><i>Caption on #F7F7FA · AA needs 4.5</i></li>
+              <li><span>tap target</span><b>32×32</b><i>Icon / Close · min 44</i></li>
+              <li><span>type scale</span><b>9 sizes</b><i>scale of 6 to 8 is enough</i></li>
+              <li><span>grid</span><b>off</b><i>Card height 143 · 8pt</i></li>
+              <li><span>auto layout</span><b>missing</b><i>4 children stacked by hand</i></li>
+              <li><span>layer names</span><b>12 default</b><i>Frame 42, Rectangle 7…</i></li>
+              <li><span>colours</span><b>17</b><i>2 near-duplicates · 9 unbound</i></li>
+              <li><span>prototype</span><b>3 unlinked</b><i>buttons with no reaction</i></li>
+              <li class="ev"><span>scored</span><time>0.3 s</time></li>
+              <li><span>overall</span><b>72</b><i>grade C · accessibility 64</i></li>
+              <li><span>fixable now</span><b>19</b><i>one click each, or all at once</i></li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="scoring" data-path="~/scoring">
+        <div class="wrap split">
+          <div class="copy">
+            <p class="num">03</p>
+            <h2>Scoring.</h2>
+            <p>Each category starts at 100. A high issue costs 10, a medium 4, a low 1. The overall number weights colour and layout a little more, because that's what reviews catch first.</p>
+            <p class="fine">Grid base, minimum text size and tap target are yours to set in Settings.</p>
+          </div>
+          <div class="win">
+            <div class="win-bar"><span>score</span><span>what it means</span></div>
+            <ol class="meter reveal" id="meter">
+              <li><span class="pct">90+</span><span class="bar-cells">[###########################<i>···</i>]</span><span class="what">A · ship it</span></li>
+              <li><span class="pct">80</span><span class="bar-cells">[########################<i>······</i>]</span><span class="what">B · polish the lows</span></li>
+              <li class="m-low"><span class="pct">70</span><span class="bar-cells">[#####################<i>·········</i>]</span><span class="what">C · fix the highs first</span></li>
+              <li class="m-end"><span class="pct">55</span><span class="bar-cells">[################<i>··············</i>]</span><span class="what">D · a proper pass</span></li>
+              <li class="heat"><span class="pct">weights</span><span class="what">colour 20 · layout 20 · type 18 · interaction 15 · visual 14 · navigation 13</span></li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="fixes" data-path="~/fixes">
+        <div class="wrap split flip">
+          <div class="copy">
+            <p class="num">04</p>
+            <h2>Fixes.</h2>
+            <p>Most issues have a button next to them. Press it and Uki edits the layer, then audits again so the score moves while you watch.</p>
+            <p class="fine">Every fix is a normal Figma edit. Cmd-Z undoes it.</p>
+          </div>
+          <div class="win">
+            <div class="win-bar"><span>fixes</span><span>one click each</span></div>
+            <ol class="flow reveal">
+              <li><b>1</b><span>snap sizes, positions, padding and gaps to the grid</span></li>
+              <li><b>2</b><span>enlarge a tap target to the minimum, kept centred</span></li>
+              <li><b>3</b><span>shift text colour toward black or white until AA passes</span><i>the hue stays, only the lightness moves</i></li>
+              <li class="alt"><b>?</b><span>rename default layers from what's inside</span><i>Frame 42 becomes Button / Continue</i></li>
+              <li class="alt"><b>!</b><span>turn a hand-stacked frame into auto layout</span><i>gap and padding inferred from the children</i></li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="extras" data-path="~/extras">
+        <div class="wrap">
+          <p class="num">05</p>
+          <h2>Optional extras.</h2>
+          <div class="cards">
+            <div class="win card">
+              <div class="win-bar"><span>uki ai review</span><span>your own key</span></div>
+              <div class="win-body">
+                <p>Sends the scores, issues, fonts and colours to Claude and returns what to fix first. The layers never leave Figma.</p>
+              </div>
+            </div>
+            <div class="win card">
+              <div class="win-bar"><span>annotate</span><span>on the canvas</span></div>
+              <div class="win-body">
+                <p>Drops a report card next to the frame with the six scores and the top issues, for the review thread.</p>
+              </div>
+            </div>
+            <div class="win card">
+              <div class="win-bar"><span>report</span><span>markdown</span></div>
+              <div class="win-body">
+                <p>Copies the whole audit as Markdown: a table of scores and every issue with its layer. Paste it in the ticket.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="install" data-path="~/install">
+        <div class="wrap narrow">
+          <p class="num">06</p>
+          <h2>Install.</h2>
+          <p>Free on Figma Community. Open the page, press Try it or Save, then select a frame and run Uki AI from the plugins menu.</p>
+          <p class="cta-row">
+            <a class="cta big" href="https://www.figma.com/community/plugin/1484499033305449577" target="_blank" rel="noopener">Open in Figma Community</a>
+            <a class="ghost" href="https://www.linkedin.com/in/kamalraaj07" target="_blank" rel="noopener">Say hi on LinkedIn</a>
+          </p>
+          <div class="win prompt">
+            <div class="win-bar"><span>share with your team</span><button type="button" class="copy-btn" id="copy">copy</button></div>
+            <pre id="prompt-text">Run Uki AI UI Auditor on the frame before you request review: https://www.figma.com/community/plugin/1484499033305449577 — aim for 80 or above, and fix every high.</pre>
+          </div>
+          <p class="warning">
+            Audits run inside Figma and nothing leaves your file. The optional Uki AI review only sends scores and issue text, and only when you add your own API key in Settings.
+          </p>
+        </div>
+      </section>
+
+      <footer class="end">
+        <p class="end-mark">Ship interfaces that pass review.</p>
+        <p class="fine">
+          Made by <a href="https://www.linkedin.com/in/kamalraaj07" target="_blank" rel="noopener">Kamal</a> · <a href="https://www.figma.com/community/plugin/1484499033305449577" target="_blank" rel="noopener">Figma Community</a> · Free
+        </p>
+      </footer>
+    </main>
+
+    <div class="bar bar-bottom">
+      <p class="keyhints">
+        <a href="#top"><b>h</b> top</a>
+        <a href="#panel"><b>p</b> panel</a>
+        <a href="#checks"><b>c</b> checks</a>
+        <a href="#scoring"><b>s</b> scoring</a>
+        <a href="#fixes"><b>f</b> fixes</a>
+        <a href="#install"><b>i</b> install</a>
+      </p>
+      <p class="status"><svg class="spark" data-spark="mirror" aria-hidden="true"></svg><span id="status">idle</span></p>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

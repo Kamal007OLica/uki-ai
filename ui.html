@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Uki AI UI Auditor</title>
+<style>
+  :root {
+    --bg: var(--figma-color-bg, #ffffff);
+    --bg2: var(--figma-color-bg-secondary, #f5f5f7);
+    --bg3: var(--figma-color-bg-tertiary, #ececf0);
+    --hover: var(--figma-color-bg-hover, #f0f0f3);
+    --text: var(--figma-color-text, #1e1e24);
+    --muted: var(--figma-color-text-secondary, #6d6d7a);
+    --faint: var(--figma-color-text-tertiary, #a0a0ab);
+    --border: var(--figma-color-border, #e3e3e8);
+    --brand: var(--figma-color-bg-brand, #0d99ff);
+    --on-brand: var(--figma-color-text-onbrand, #ffffff);
+    --danger: var(--figma-color-text-danger, #e03e52);
+    --warn: #f59e0b;
+    --info: #3b82f6;
+    --good: #22b573;
+    --uki: #f0c75e;
+    --uki-ink: #0d0f0c;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --ui: Inter, "Helvetica Neue", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font: 400 12px/1.5 var(--ui);
+    color: var(--text);
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+  button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; padding: 0; }
+  button:disabled { opacity: 0.5; cursor: default; }
+  input, select { font: inherit; color: var(--text); }
+  :focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+  .hidden { display: none !important; }
+
+  /* ---- Header -------------------------------------------------------------- */
+  header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    flex: none;
+  }
+  .logo {
+    width: 26px; height: 26px; border-radius: 8px; flex: none;
+    background: var(--uki-ink); display: grid; place-items: center;
+  }
+  .logo svg { width: 18px; height: 18px; }
+  .title { font-weight: 600; font-size: 13px; letter-spacing: -0.01em; }
+  .title small { font-weight: 400; color: var(--muted); margin-left: 6px; }
+  .spacer { flex: 1; }
+  .scope {
+    display: inline-flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden;
+  }
+  .scope button { padding: 4px 9px; font-size: 11px; color: var(--muted); }
+  .scope button[aria-pressed="true"] { background: var(--bg3); color: var(--text); font-weight: 600; }
+  .primary {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 30px; padding: 0 12px; border-radius: 7px;
+    background: var(--uki-ink); color: #fff; font-weight: 600; font-size: 12px;
+    transition: transform 0.12s ease, filter 0.12s ease;
+  }
+  .primary:hover { filter: brightness(1.15); }
+  .primary:active { transform: scale(0.98); }
+  .primary .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--uki); }
+  .primary.busy .dot { animation: pulse 0.9s ease-in-out infinite; }
+  @keyframes pulse { 50% { transform: scale(0.5); opacity: 0.4; } }
+
+  .selbar {
+    display: flex; align-items: center; gap: 8px; padding: 6px 14px;
+    font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--border);
+    background: var(--bg2); min-height: 30px; flex: none;
+  }
+  .selbar b { color: var(--text); font-weight: 600; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .progress { height: 2px; background: var(--border); flex: none; overflow: hidden; }
+  .progress i { display: block; height: 100%; width: 0; background: var(--uki); transition: width 0.2s ease; }
+
+  /* ---- Tabs ---------------------------------------------------------------- */
+  nav.tabs { display: flex; gap: 2px; padding: 6px 10px 0; border-bottom: 1px solid var(--border); flex: none; }
+  nav.tabs button {
+    padding: 7px 10px; font-size: 12px; color: var(--muted); border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  nav.tabs button[aria-selected="true"] { color: var(--text); font-weight: 600; border-bottom-color: var(--text); }
+  nav.tabs button .n { display: inline-block; min-width: 16px; padding: 0 4px; margin-left: 4px; border-radius: 8px; font-size: 10px; background: var(--bg3); color: var(--muted); text-align: center; }
+
+  main { flex: 1; overflow: auto; }
+  .pane { padding: 14px; display: none; }
+  .pane.on { display: block; }
+
+  /* ---- Empty state --------------------------------------------------------- */
+  .empty { text-align: center; padding: 48px 20px 28px; color: var(--muted); }
+  .empty .ring { margin: 0 auto 16px; }
+  .empty h2 { margin: 0 0 6px; font-size: 15px; color: var(--text); font-weight: 600; }
+  .empty p { margin: 0 auto; max-width: 300px; }
+  .empty ul { list-style: none; padding: 0; margin: 18px auto 0; max-width: 300px; text-align: left; }
+  .empty li { display: flex; gap: 8px; padding: 4px 0; }
+  .empty li b { color: var(--uki-ink); background: var(--uki); border-radius: 4px; padding: 0 5px; font-size: 10px; height: 16px; line-height: 16px; flex: none; }
+  .error { margin: 0 14px 10px; padding: 8px 10px; border-radius: 6px; background: color-mix(in srgb, var(--danger) 10%, transparent); color: var(--danger); font-size: 11px; }
+
+  /* ---- Overview ------------------------------------------------------------ */
+  .hero { display: grid; grid-template-columns: 112px 1fr; gap: 16px; align-items: center; margin-bottom: 14px; }
+  .ring { position: relative; width: 112px; height: 112px; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring circle { fill: none; stroke-width: 9; stroke-linecap: round; }
+  .ring .track { stroke: var(--bg3); }
+  .ring .bar { stroke: var(--good); stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset 0.9s cubic-bezier(0.3, 0, 0.2, 1), stroke 0.4s; }
+  .ring .num { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
+  .ring .num b { font-size: 30px; line-height: 1; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .ring .num span { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+  .hero h2 { margin: 0 0 4px; font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+  .hero p { margin: 0; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; background: var(--bg2); border: 1px solid var(--border); font-size: 11px; }
+  .chip i { width: 7px; height: 7px; border-radius: 50%; }
+  .chip.high i { background: var(--danger); }
+  .chip.medium i { background: var(--warn); }
+  .chip.low i { background: var(--info); }
+
+  .cats { display: grid; gap: 6px; margin-bottom: 14px; }
+  .cat {
+    display: grid; grid-template-columns: 112px 1fr 32px; gap: 10px; align-items: center;
+    padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); text-align: left;
+    transition: background 0.12s ease;
+  }
+  .cat:hover { background: var(--hover); }
+  .cat .label { font-weight: 500; }
+  .cat .label small { display: block; color: var(--faint); font-size: 10px; font-weight: 400; }
+  .cat .track { height: 6px; border-radius: 3px; background: var(--bg3); overflow: hidden; }
+  .cat .track i { display: block; height: 100%; width: 0; border-radius: 3px; background: var(--good); transition: width 0.7s cubic-bezier(0.3, 0, 0.2, 1); }
+  .cat .val { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    height: 32px; padding: 0 12px; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--bg); font-weight: 500; font-size: 12px;
+  }
+  .btn:hover { background: var(--hover); }
+  .btn.wide { grid-column: 1 / -1; }
+  .btn.ai { background: linear-gradient(135deg, #fff1bf, var(--uki) 45%, #c9942a); color: var(--uki-ink); border-color: transparent; font-weight: 600; }
+  .btn.ai:hover { filter: brightness(1.04); }
+  .meta { margin-top: 14px; font-size: 11px; color: var(--faint); line-height: 1.6; }
+  .meta code { font-family: var(--mono); font-size: 10.5px; }
+
+  .ai-box { margin-top: 12px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .ai-box .bar { display: flex; align-items: center; gap: 8px; padding: 7px 12px; background: var(--bg2); font-size: 11px; color: var(--muted); }
+  .ai-box .bar b { color: var(--text); }
+  .ai-box .body { padding: 12px; white-space: pre-wrap; font-size: 12px; line-height: 1.55; max-height: 320px; overflow: auto; }
+  .ai-box .body h4 { margin: 10px 0 4px; font-size: 12px; }
+  .ai-box .body h4:first-child { margin-top: 0; }
+  .ai-box .body ul { margin: 0 0 6px; padding-left: 18px; }
+  .ai-box .body li { margin: 2px 0; }
+  .ai-box .body strong { font-weight: 600; }
+
+  /* ---- Issues -------------------------------------------------------------- */
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .filters button { padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border); font-size: 11px; color: var(--muted); }
+  .filters button[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .fixall { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; padding: 8px 10px; border-radius: 8px; background: var(--bg2); font-size: 11px; }
+  .fixall button { padding: 4px 10px; border-radius: 6px; background: var(--uki-ink); color: #fff; font-weight: 600; font-size: 11px; }
+  .issues { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .issue {
+    display: grid; grid-template-columns: 10px 1fr auto; gap: 10px; align-items: start;
+    padding: 9px 10px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+    transition: background 0.12s ease, opacity 0.3s ease, transform 0.3s ease;
+  }
+  .issue:hover { background: var(--hover); }
+  .issue.gone { opacity: 0; transform: translateX(10px); }
+  .issue .sev { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; }
+  .issue.high .sev { background: var(--danger); }
+  .issue.medium .sev { background: var(--warn); }
+  .issue.low .sev { background: var(--info); }
+  .issue h3 { margin: 0; font-size: 12px; font-weight: 600; }
+  .issue h3 span { font-weight: 400; color: var(--muted); }
+  .issue p { margin: 2px 0 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+  .issue .cat-tag { display: inline-block; margin-top: 5px; font-size: 10px; color: var(--faint); letter-spacing: 0.04em; text-transform: uppercase; }
+  .issue .fix { padding: 4px 9px; border-radius: 6px; border: 1px solid var(--border); font-size: 11px; font-weight: 500; white-space: nowrap; }
+  .issue .fix:hover { background: var(--uki); color: var(--uki-ink); border-color: transparent; }
+  .issue.nonode { cursor: default; }
+  .none { text-align: center; color: var(--muted); padding: 30px 10px; }
+
+  /* ---- Settings ------------------------------------------------------------ */
+  .field { display: grid; gap: 4px; margin-bottom: 14px; }
+  .field label { font-weight: 600; font-size: 12px; }
+  .field .help { font-size: 11px; color: var(--muted); }
+  .field input, .field select {
+    height: 32px; padding: 0 10px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg);
+  }
+  .field .row { display: flex; gap: 8px; }
+  .field .row input { flex: 1; }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; width: fit-content; }
+  .seg button { padding: 6px 14px; font-size: 12px; color: var(--muted); }
+  .seg button[aria-pressed="true"] { background: var(--text); color: var(--bg); font-weight: 600; }
+  h2.section { margin: 20px 0 10px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
+  .note { font-size: 11px; color: var(--muted); padding: 10px 12px; border-radius: 8px; background: var(--bg2); line-height: 1.5; }
+  .note a { color: inherit; }
+  .save-state { font-size: 11px; color: var(--good); margin-left: 8px; }
+
+  footer { flex: none; display: flex; align-items: center; justify-content: space-between; padding: 6px 14px; border-top: 1px solid var(--border); font-size: 10.5px; color: var(--faint); }
+  footer a { color: inherit; }
+  .grip { width: 14px; height: 14px; cursor: nwse-resize; color: var(--faint); }
+</style>
+</head>
+<body>
+  <header>
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 16 16"><defs><linearGradient id="ukig" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff6d0"/><stop offset="0.42" stop-color="#f3cf6c"/><stop offset="1" stop-color="#b07a1a"/></linearGradient></defs><path d="M7.5 1.5 Q8.5 7.5 13.5 8.5 Q8.5 9.5 7.5 15.5 Q6.5 9.5 1.5 8.5 Q6.5 7.5 7.5 1.5 Z" fill="url(#ukig)"/><path d="M12.5 1.2 Q12.9 2.8 14.5 3.2 Q12.9 3.6 12.5 5.2 Q12.1 3.6 10.5 3.2 Q12.1 2.8 12.5 1.2 Z" fill="url(#ukig)"/></svg>
+    </div>
+    <div class="title">Uki AI<small>UI Auditor</small></div>
+    <div class="spacer"></div>
+    <div class="scope" role="group" aria-label="Audit scope">
+      <button id="scope-selection" aria-pressed="true">Selection</button>
+      <button id="scope-page" aria-pressed="false">Page</button>
+    </div>
+    <button class="primary" id="run"><span class="dot"></span><span id="run-label">Audit</span></button>
+  </header>
+  <div class="selbar" id="selbar">Select a frame to begin.</div>
+  <div class="progress"><i id="progress"></i></div>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="overview">Overview</button>
+    <button role="tab" aria-selected="false" data-tab="issues">Issues<span class="n" id="issue-count">0</span></button>
+    <button role="tab" aria-selected="false" data-tab="settings">Settings</button>
+  </nav>
+
+  <div class="error hidden" id="error" role="alert"></div>
+
+  <main>
+    <section class="pane on" id="pane-overview">
+      <div class="empty" id="empty">
+        <div class="ring">
+          <svg viewBox="0 0 36 36"><circle class="track" cx="18" cy="18" r="15.9"/><circle class="bar" cx="18" cy="18" r="15.9" style="stroke-dashoffset:100"/></svg>
+          <div class="num"><div><b>—</b><br><span>score</span></div></div>
+        </div>
+        <h2>Audit any frame in one click.</h2>
+        <p>Select a screen, a component or a whole page. Uki checks six things designers get reviewed on and scores each out of 100.</p>
+        <ul>
+          <li><b>01</b> Colour and contrast against WCAG AA</li>
+          <li><b>02</b> Type scale, sizes and line height</li>
+          <li><b>03</b> Spacing on the grid and auto layout</li>
+          <li><b>04</b> Tap targets, crowding, prototype links</li>
+          <li><b>05</b> Layer names, hierarchy, hidden leftovers</li>
+          <li><b>06</b> Radii, strokes and shadow consistency</li>
+        </ul>
+      </div>
+
+      <div id="result" class="hidden">
+        <div class="hero">
+          <div class="ring">
+            <svg viewBox="0 0 36 36"><circle class="track" cx="18" cy="18" r="15.9"/><circle class="bar" id="ring-bar" cx="18" cy="18" r="15.9"/></svg>
+            <div class="num"><div><b id="score">0</b><br><span id="grade">grade</span></div></div>
+          </div>
+          <div>
+            <h2 id="headline">Looks good.</h2>
+            <p id="subline"></p>
+            <div class="chips" id="chips"></div>
+          </div>
+        </div>
+        <div class="cats" id="cats"></div>
+        <div class="actions">
+          <button class="btn" id="annotate">Annotate on canvas</button>
+          <button class="btn" id="copy">Copy report</button>
+          <button class="btn ai wide" id="ask-ai">Ask Uki AI for a review</button>
+        </div>
+        <div class="ai-box hidden" id="ai-box">
+          <div class="bar"><b>Uki AI review</b><span id="ai-status">thinking…</span></div>
+          <div class="body" id="ai-body"></div>
+        </div>
+        <p class="meta" id="meta"></p>
+      </div>
+    </section>
+
+    <section class="pane" id="pane-issues">
+      <div class="filters" id="filters">
+        <button data-filter="all" aria-pressed="true">All</button>
+        <button data-filter="high" aria-pressed="false">High</button>
+        <button data-filter="medium" aria-pressed="false">Medium</button>
+        <button data-filter="low" aria-pressed="false">Low</button>
+        <button data-filter="fixable" aria-pressed="false">Fixable</button>
+      </div>
+      <div class="fixall hidden" id="fixall"><span id="fixall-label"></span><button id="fixall-btn">Fix all</button></div>
+      <ul class="issues" id="issues"></ul>
+      <div class="none hidden" id="no-issues">Nothing to show here.</div>
+    </section>
+
+    <section class="pane" id="pane-settings">
+      <div class="field">
+        <label>Spacing grid</label>
+        <div class="seg" id="grid-seg">
+          <button data-grid="4" aria-pressed="false">4pt</button>
+          <button data-grid="8" aria-pressed="true">8pt</button>
+        </div>
+        <div class="help">Sizes, positions and padding are checked against this base.</div>
+      </div>
+      <div class="field">
+        <label for="min-text">Minimum text size (px)</label>
+        <input id="min-text" type="number" min="8" max="20" step="1" value="12" />
+        <div class="help">Anything smaller is flagged. 12 for web, 11 for dense dashboards.</div>
+      </div>
+      <div class="field">
+        <label for="min-target">Minimum tap target (px)</label>
+        <input id="min-target" type="number" min="24" max="64" step="1" value="44" />
+        <div class="help">44 follows Apple's HIG; Material uses 48; WCAG 2.2 AA asks for 24.</div>
+      </div>
+
+      <h2 class="section">Uki AI review (optional)</h2>
+      <div class="field">
+        <label for="api-key">Anthropic API key</label>
+        <div class="row">
+          <input id="api-key" type="password" placeholder="sk-ant-…" autocomplete="off" spellcheck="false" />
+          <button class="btn" id="test-key" type="button">Test</button>
+        </div>
+        <div class="help">Stored only on this device in Figma's plugin storage. Create one at console.anthropic.com. Leave empty to keep audits fully offline.</div>
+      </div>
+      <div class="field">
+        <label for="model">Model</label>
+        <select id="model">
+          <option value="claude-opus-5-5">Claude Opus 5.5 (default)</option>
+          <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (faster, cheaper)</option>
+          <option value="claude-fable-5-1">Claude Fable 5.1 (most capable)</option>
+        </select>
+      </div>
+      <button class="btn" id="save">Save settings</button><span class="save-state hidden" id="saved">Saved</span>
+      <p class="note" style="margin-top:16px">Audits run inside Figma and never send your design anywhere. With a key, the review request sends only the scores, issue list, fonts and colours of the audited frames to Anthropic, not the layers themselves.</p>
+    </section>
+  </main>
+
+  <footer>
+    <span>Uki AI UI Auditor v2.0 · <a href="https://www.figma.com/community/plugin/1484499033305449577" target="_blank" rel="noopener">Community page</a></span>
+    <svg class="grip" id="grip" viewBox="0 0 14 14" fill="currentColor" aria-label="Resize"><circle cx="11" cy="11" r="1.2"/><circle cx="7" cy="11" r="1.2"/><circle cx="11" cy="7" r="1.2"/><circle cx="3" cy="11" r="1.2"/><circle cx="11" cy="3" r="1.2"/><circle cx="7" cy="7" r="1.2"/></svg>
+  </footer>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const post = (msg) => parent.postMessage({ pluginMessage: msg }, '*');
+  const CATEGORY_HELP = {
+    visual: 'radii, strokes, shadows, overflow',
+    typography: 'families, sizes, line height',
+    color: 'contrast, palette, tokens',
+    layout: 'grid, auto layout, alignment',
+    navigation: 'names, hierarchy, landmarks',
+    interaction: 'tap targets, spacing, links',
+  };
+  const FIX_LABELS = {
+    'snap-grid': 'Snap',
+    rename: 'Rename',
+    'enlarge-target': 'Enlarge',
+    'fix-contrast': 'Fix contrast',
+    'min-text': 'Enlarge text',
+    'auto-layout': 'Auto layout',
+  };
+
+  let scope = 'selection';
+  let settings = { grid: 8, minText: 12, minTarget: 44, apiKey: '', model: 'claude-opus-5-5' };
+  let report = null;
+  let filter = 'all';
+  let categoryFilter = null;
+  let busy = false;
+
+  // ---- Tabs
+  const tabs = [...document.querySelectorAll('nav.tabs button')];
+  function showTab(name) {
+    tabs.forEach((t) => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
+    document.querySelectorAll('.pane').forEach((p) => p.classList.toggle('on', p.id === `pane-${name}`));
+  }
+  tabs.forEach((t) => t.addEventListener('click', () => showTab(t.dataset.tab)));
+
+  // ---- Scope and run
+  $('scope-selection').onclick = () => setScope('selection');
+  $('scope-page').onclick = () => setScope('page');
+  function setScope(s) {
+    scope = s;
+    $('scope-selection').setAttribute('aria-pressed', String(s === 'selection'));
+    $('scope-page').setAttribute('aria-pressed', String(s === 'page'));
+  }
+  $('run').onclick = () => run();
+  function run() {
+    if (busy) return;
+    busy = true;
+    $('run').classList.add('busy');
+    $('run-label').textContent = 'Auditing…';
+    $('error').classList.add('hidden');
+    $('progress').style.width = '8%';
+    post({ type: 'audit', scope });
+  }
+  function done() {
+    busy = false;
+    $('run').classList.remove('busy');
+    $('run-label').textContent = report ? 'Audit again' : 'Audit';
+    $('progress').style.width = '100%';
+    setTimeout(() => ($('progress').style.width = '0'), 500);
+  }
+
+  // ---- Rendering
+  const colorFor = (s) => (s >= 80 ? 'var(--good)' : s >= 60 ? 'var(--warn)' : 'var(--danger)');
+
+  function headline(r) {
+    if (r.score >= 90) return 'Ship it.';
+    if (r.score >= 80) return 'Nearly there.';
+    if (r.score >= 70) return 'Solid, with rough edges.';
+    if (r.score >= 55) return 'Fix the highs first.';
+    return 'Needs a proper pass.';
+  }
+
+  function render() {
+    const r = report;
+    $('empty').classList.add('hidden');
+    $('result').classList.remove('hidden');
+    $('score').textContent = r.score;
+    $('grade').textContent = `grade ${r.grade}`;
+    const bar = $('ring-bar');
+    bar.style.stroke = colorFor(r.score);
+    requestAnimationFrame(() => (bar.style.strokeDashoffset = String(100 - r.score)));
+    $('headline').textContent = headline(r);
+    const counts = { high: 0, medium: 0, low: 0 };
+    r.issues.forEach((i) => { if (!i.noScore) counts[i.severity]++; });
+    $('subline').textContent = `${r.rootNames.slice(0, 2).join(', ')}${r.rootNames.length > 2 ? ` +${r.rootNames.length - 2}` : ''} · ${r.nodeCount} layers · accessibility ${r.a11y}/100`;
+    $('chips').innerHTML = ['high', 'medium', 'low'].map((s) => `<span class="chip ${s}"><i></i>${counts[s]} ${s}</span>`).join('');
+    $('cats').innerHTML = r.categories.map((c) => `
+      <button class="cat" data-cat="${c.key}" title="Show ${c.label.toLowerCase()} issues">
+        <span class="label">${c.label}<small>${CATEGORY_HELP[c.key]}</small></span>
+        <span class="track"><i style="background:${colorFor(c.score)}"></i></span>
+        <span class="val">${c.score}</span>
+      </button>`).join('');
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.cat').forEach((el, i) => (el.querySelector('i').style.width = `${r.categories[i].score}%`));
+    });
+    document.querySelectorAll('.cat').forEach((el) => el.addEventListener('click', () => {
+      categoryFilter = el.dataset.cat;
+      filter = 'all';
+      showTab('issues');
+      renderIssues();
+    }));
+    $('meta').innerHTML = `Fonts: ${r.stats.fonts.length ? r.stats.fonts.map((f) => `<code>${esc(f)}</code>`).join(', ') : 'none'} · sizes: ${r.stats.sizes.join(', ') || 'none'}<br>Colours: ${r.stats.colors.length} · interactive: ${r.stats.interactive} · text layers: ${r.stats.textLayers}${r.truncated ? '<br><b>Large selection:</b> only the first 6000 layers were checked.' : ''}`;
+    $('issue-count').textContent = r.issues.filter((i) => !i.noScore).length;
+    $('ai-box').classList.add('hidden');
+    renderIssues();
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  }
+
+  function visibleIssues() {
+    if (!report) return [];
+    return report.issues.filter((i) => {
+      if (categoryFilter && i.category !== categoryFilter) return false;
+      if (filter === 'fixable') return !!i.fix && !!i.nodeId;
+      if (filter !== 'all') return i.severity === filter;
+      return true;
+    });
+  }
+
+  function renderIssues() {
+    const list = visibleIssues();
+    const ul = $('issues');
+    const catLabel = categoryFilter ? report.categories.find((c) => c.key === categoryFilter).label : null;
+    $('filters').querySelectorAll('button[data-filter]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === filter)));
+    let catBtn = $('filters').querySelector('[data-cat-clear]');
+    if (catLabel) {
+      if (!catBtn) {
+        catBtn = document.createElement('button');
+        catBtn.dataset.catClear = '1';
+        catBtn.setAttribute('aria-pressed', 'true');
+        catBtn.addEventListener('click', () => { categoryFilter = null; renderIssues(); });
+        $('filters').appendChild(catBtn);
+      }
+      catBtn.textContent = `${catLabel} ×`;
+    } else if (catBtn) catBtn.remove();
+
+    const fixable = list.filter((i) => i.fix && i.nodeId);
+    $('fixall').classList.toggle('hidden', fixable.length < 2);
+    $('fixall-label').textContent = `${fixable.length} issues can be fixed automatically`;
+
+    ul.innerHTML = list.map((i) => `
+      <li class="issue ${i.severity} ${i.nodeId ? '' : 'nonode'}" data-id="${esc(i.id)}" data-node="${esc(i.nodeId || '')}" data-fix="${esc(i.fix || '')}">
+        <span class="sev" aria-hidden="true"></span>
+        <div>
+          <h3>${esc(i.title)}${i.nodeName ? ` <span>· ${esc(i.nodeName)}</span>` : ''}</h3>
+          <p>${esc(i.detail)}</p>
+          <span class="cat-tag">${esc(report.categories.find((c) => c.key === i.category).label)} · ${i.severity}</span>
+        </div>
+        ${i.fix && i.nodeId ? `<button class="fix" data-action="fix">${FIX_LABELS[i.fix]}</button>` : '<span></span>'}
+      </li>`).join('');
+    $('no-issues').classList.toggle('hidden', list.length > 0);
+    $('no-issues').textContent = report && report.issues.length === 0 ? 'No issues found. Nice work.' : 'Nothing matches this filter.';
+  }
+
+  $('filters').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-filter]');
+    if (!b) return;
+    filter = b.dataset.filter;
+    renderIssues();
+  });
+
+  $('issues').addEventListener('click', (e) => {
+    const li = e.target.closest('li.issue');
+    if (!li) return;
+    const nodeId = li.dataset.node;
+    if (e.target.closest('[data-action="fix"]')) {
+      if (!nodeId) return;
+      e.target.disabled = true;
+      e.target.textContent = '…';
+      post({ type: 'fix', nodeId, fix: li.dataset.fix });
+      return;
+    }
+    if (nodeId) post({ type: 'select', nodeId });
+  });
+
+  $('fixall-btn').onclick = () => {
+    const items = visibleIssues().filter((i) => i.fix && i.nodeId).map((i) => ({ nodeId: i.nodeId, fix: i.fix }));
+    if (!items.length) return;
+    $('fixall-btn').disabled = true;
+    $('fixall-btn').textContent = 'Fixing…';
+    post({ type: 'fix-all', items });
+  };
+
+  $('annotate').onclick = () => post({ type: 'annotate' });
+
+  // ---- Report export
+  function markdown(r) {
+    const lines = [];
+    lines.push(`# Uki AI UI audit · ${r.score}/100 (grade ${r.grade})`);
+    lines.push(`Scope: ${r.rootNames.join(', ')} · ${r.nodeCount} layers · accessibility ${r.a11y}/100 · ${new Date(r.ranAt).toLocaleString()}`);
+    lines.push('');
+    lines.push('| Category | Score | Issues |');
+    lines.push('|---|---:|---:|');
+    r.categories.forEach((c) => lines.push(`| ${c.label} | ${c.score} | ${c.issues} |`));
+    lines.push('');
+    lines.push('## Issues');
+    r.issues.forEach((i) => lines.push(`- **${i.severity.toUpperCase()}** ${i.title}${i.nodeName ? ` (${i.nodeName})` : ''}: ${i.detail}`));
+    lines.push('');
+    lines.push(`Fonts: ${r.stats.fonts.join(', ') || 'none'} · sizes: ${r.stats.sizes.join(', ')} · colours: ${r.stats.colors.join(', ')}`);
+    return lines.join('\n');
+  }
+  function copyText(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (_e) { ok = false; }
+    ta.remove();
+    return ok;
+  }
+  $('copy').onclick = () => {
+    if (!report) return;
+    const ok = copyText(markdown(report));
+    $('copy').textContent = ok ? 'Copied as Markdown' : 'Copy failed';
+    setTimeout(() => ($('copy').textContent = 'Copy report'), 1600);
+  };
+
+  // ---- Uki AI review (optional; the user's own key, called straight from this iframe)
+  function compactReport(r) {
+    return {
+      score: r.score, grade: r.grade, accessibility: r.a11y, scope: r.rootNames, layers: r.nodeCount,
+      categories: r.categories.map((c) => ({ name: c.label, score: c.score, issues: c.issues })),
+      issues: r.issues.filter((i) => !i.noScore).slice(0, 60).map((i) => ({ severity: i.severity, category: i.category, title: i.title, layer: i.nodeName, detail: i.detail })),
+      fonts: r.stats.fonts, sizes: r.stats.sizes, colours: r.stats.colors.slice(0, 40), interactive: r.stats.interactive, textLayers: r.stats.textLayers,
+    };
+  }
+
+  function renderAiText(text) {
+    // Minimal Markdown: headings, bullets, bold.
+    const html = esc(text)
+      .replace(/^#{1,3}\s+(.+)$/gm, '<h4>$1</h4>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^(?:[-*•]\s+)(.+)$/gm, '<li>$1</li>')
+      .replace(/(<li>[\s\S]*?<\/li>)(?!\s*<li>)/g, '<ul>$1</ul>')
+      .replace(/<\/li>\s*<li>/g, '</li><li>');
+    $('ai-body').innerHTML = html;
+  }
+
+  async function askAi(testOnly) {
+    const key = settings.apiKey;
+    if (!key) {
+      showTab('settings');
+      $('api-key').focus();
+      $('error').textContent = 'Add your Anthropic API key in Settings to use Uki AI review.';
+      $('error').classList.remove('hidden');
+      return;
+    }
+    const body = {
+      model: settings.model || 'claude-opus-5-5',
+      max_tokens: testOnly ? 32 : 2000,
+      fallbacks: 'default',
+      system: testOnly
+        ? 'Reply with the single word OK.'
+        : 'You are Uki AI, a principal product designer reviewing a Figma frame for a designer who wants to ship. You get a machine audit as JSON: scores out of 100, issues, fonts, sizes and colours. Write a short review in Markdown with three sections: "## What to fix first" (at most five bullets, the highest-leverage changes, each naming the layer when known and what to change it to), "## Pattern" (two or three sentences on the systemic cause, for example no spacing tokens, no type scale), and "## Keep" (one or two things that are already right). Be specific, use the numbers in the data, no preamble, no apologies, under 250 words.',
+      messages: [{ role: 'user', content: testOnly ? 'ping' : `Audit data:\n${JSON.stringify(compactReport(report))}` }],
+    };
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-beta': 'server-side-fallback-2026-07-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const m = (data && data.error && data.error.message) || `HTTP ${res.status}`;
+      throw new Error(m);
+    }
+    if (data.stop_reason === 'refusal') throw new Error('The model declined this request.');
+    return (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n').trim();
+  }
+
+  $('ask-ai').onclick = async () => {
+    if (!report) return;
+    $('ai-box').classList.remove('hidden');
+    $('ai-status').textContent = 'thinking…';
+    $('ai-body').textContent = '';
+    $('ask-ai').disabled = true;
+    try {
+      const text = await askAi(false);
+      renderAiText(text);
+      $('ai-status').textContent = settings.model;
+    } catch (e) {
+      $('ai-status').textContent = 'failed';
+      $('ai-body').textContent = e.message || String(e);
+    } finally {
+      $('ask-ai').disabled = false;
+    }
+  };
+
+  $('test-key').onclick = async () => {
+    settings.apiKey = $('api-key').value.trim();
+    $('test-key').textContent = '…';
+    try {
+      await askAi(true);
+      $('test-key').textContent = 'Works';
+    } catch (e) {
+      $('test-key').textContent = 'Failed';
+      $('error').textContent = e.message || String(e);
+      $('error').classList.remove('hidden');
+    }
+    setTimeout(() => ($('test-key').textContent = 'Test'), 2000);
+  };
+
+  // ---- Settings
+  function applySettings(s) {
+    settings = s;
+    $('grid-seg').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.grid) === s.grid)));
+    $('min-text').value = s.minText;
+    $('min-target').value = s.minTarget;
+    $('api-key').value = s.apiKey || '';
+    $('model').value = s.model || 'claude-opus-5-5';
+  }
+  $('grid-seg').addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    $('grid-seg').querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  });
+  $('save').onclick = () => {
+    const grid = Number($('grid-seg').querySelector('[aria-pressed="true"]').dataset.grid);
+    post({ type: 'save-settings', settings: {
+      grid,
+      minText: Math.max(8, Math.min(20, Number($('min-text').value) || 12)),
+      minTarget: Math.max(24, Math.min(64, Number($('min-target').value) || 44)),
+      apiKey: $('api-key').value.trim(),
+      model: $('model').value,
+    } });
+    $('saved').classList.remove('hidden');
+    setTimeout(() => $('saved').classList.add('hidden'), 1600);
+  };
+
+  // ---- Resize grip
+  const grip = $('grip');
+  let drag = null;
+  grip.addEventListener('pointerdown', (e) => {
+    drag = { x: e.clientX, y: e.clientY, w: window.innerWidth, h: window.innerHeight };
+    grip.setPointerCapture(e.pointerId);
+  });
+  grip.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    post({ type: 'resize', width: drag.w + (e.clientX - drag.x), height: drag.h + (e.clientY - drag.y) });
+  });
+  grip.addEventListener('pointerup', () => (drag = null));
+
+  // ---- Messages from the main thread
+  window.onmessage = (e) => {
+    const msg = e.data.pluginMessage;
+    if (!msg) return;
+    switch (msg.type) {
+      case 'settings': applySettings(msg.settings); break;
+      case 'selection': {
+        if (msg.count === 0) $('selbar').innerHTML = `Nothing selected on <b>${esc(msg.pageName)}</b>. Select a frame, or switch scope to Page.`;
+        else $('selbar').innerHTML = `Selected: <b>${esc(msg.names.join(', '))}</b>${msg.count > 3 ? ` +${msg.count - 3}` : ''}`;
+        break;
+      }
+      case 'auto-run': busy = true; $('run').classList.add('busy'); $('run-label').textContent = 'Auditing…'; break;
+      case 'progress': $('progress').style.width = `${Math.min(90, 8 + msg.done / 60)}%`; break;
+      case 'result': report = msg.report; render(); done(); showTab(report.issues.length ? 'overview' : 'overview'); break;
+      case 'error': $('error').textContent = msg.message; $('error').classList.remove('hidden'); done(); break;
+      case 'fixed': {
+        if (msg.ok) {
+          const li = document.querySelector(`li.issue[data-node="${CSS.escape(msg.nodeId)}"][data-fix="${CSS.escape(msg.fix)}"]`);
+          if (li) li.classList.add('gone');
+          setTimeout(() => post({ type: 'reaudit' }), 350);
+        } else {
+          const btn = document.querySelector(`li.issue[data-node="${CSS.escape(msg.nodeId)}"] .fix`);
+          if (btn) { btn.disabled = false; btn.textContent = 'Retry'; }
+        }
+        break;
+      }
+      case 'fixed-all': {
+        $('fixall-btn').disabled = false;
+        $('fixall-btn').textContent = 'Fix all';
+        post({ type: 'reaudit' });
+        break;
+      }
+    }
+  };
+
+  post({ type: 'init' });
+})();
+</script>
+</body>
+</html>

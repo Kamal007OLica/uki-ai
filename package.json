@@ -1,0 +1,22 @@
+{
+  "name": "uki-ai-ui-auditor",
+  "version": "2.0.0",
+  "description": "One-click UI audits for Figma: contrast, type scale, grid, tap targets, naming and consistency, scored out of 100 with one-click fixes.",
+  "main": "code.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "watch": "npm run build -- --watch"
+  },
+  "author": "Kamal",
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@figma/eslint-plugin-figma-plugins": "*",
+    "@figma/plugin-typings": "*",
+    "eslint": "^9.39.4",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.57.1"
+  }
+}

@@ -1,0 +1,1396 @@
+/* Uki AI website. The sky starts as a dark canvas with faint gold dust and lights up as the sparkle
+   ignites; the plugin panel is reviewed against that lit night. app.js updates --sky-*, --ink and --glow as the
+   sky changes, so the bars and the wordmark follow the canvas. */
+
+:root {
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --serif: "Times New Roman", Times, serif;
+  --ui: Inter, "Helvetica Neue", Helvetica, system-ui, sans-serif;
+  --sky-top: #0c0e0b;
+  --sky-bottom: #070806;
+  --ink: #e9d9a6;
+  --accent: #f0c75e;
+  --glow: rgba(240, 199, 94, 0.2);
+  --night: #0a0906;
+  --deep: #1f180a;
+  --glass: rgba(22, 18, 8, 0.64);
+  --rim: rgba(240, 199, 94, 0.3);
+  --text: #f6efdc;
+  --muted: #bfae7c;
+  --yellow: #f0c75e;
+  --blue: #cfa74f;
+  --red: #ff4d6a;
+  --green: #35d58c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--night);
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  font: 400 15px/1.65 var(--mono);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+#sky {
+  position: fixed;
+  inset: 0 0 auto 0;
+  width: 100%;
+  height: 100vh;
+  height: 100lvh;
+  display: block;
+  background: linear-gradient(var(--sky-top), var(--sky-bottom));
+}
+
+/* ---- Top and bottom bars, like a terminal's title and status lines ----------------------------- */
+
+.bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 38px;
+  padding: 0 18px;
+  font-size: 13px;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--sky-top) 82%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.bar p {
+  margin: 0;
+}
+
+.bar a {
+  text-decoration: none;
+}
+
+.bar-top {
+  top: 0;
+  border-bottom: 1px dashed color-mix(in srgb, var(--ink) 32%, transparent);
+}
+
+.bar-bottom {
+  bottom: 0;
+  border-top: 1px dashed color-mix(in srgb, var(--ink) 32%, transparent);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.bar .spark {
+  width: 20px;
+  height: 20px;
+  color: var(--ink);
+}
+
+.bar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.path {
+  color: color-mix(in srgb, var(--ink) 72%, transparent);
+}
+
+.bar-right a:hover,
+.keyhints a:hover {
+  text-decoration: underline;
+}
+
+.li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in srgb, var(--ink) 50%, transparent);
+  border-radius: 7px;
+  font-size: 14px;
+  transition: background-color 0.15s;
+}
+
+.li svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.bar-right .li:hover {
+  text-decoration: none;
+  background: color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 7px;
+  background: var(--accent);
+  color: #0d0f0c;
+  font-weight: 600;
+  font-size: 14px;
+  transition: filter 0.15s, transform 0.15s;
+}
+
+.bar-right .cta:hover {
+  text-decoration: none;
+  filter: brightness(1.12);
+}
+
+.keyhints {
+  display: flex;
+  gap: 18px;
+  color: color-mix(in srgb, var(--ink) 72%, transparent);
+}
+
+.keyhints b {
+  color: var(--accent);
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- The first screen: the canvas draws the sky, the SVG holds the eye and wordmark ------------- */
+
+main {
+  position: relative;
+  z-index: 1;
+}
+
+.stage {
+  position: relative;
+  height: 250vh;
+  height: 250lvh;
+}
+
+.stage-pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100lvh;
+  pointer-events: none;
+}
+
+.hero-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  color: var(--ink);
+}
+
+.hero-art > * {
+  filter: drop-shadow(0 4px 18px var(--glow));
+}
+
+#hero-word {
+  font-family: var(--serif);
+  font-weight: 400;
+  fill: currentColor;
+  text-anchor: middle;
+  letter-spacing: -0.02em;
+}
+
+.tagline {
+  position: absolute;
+  left: 50%;
+  top: var(--tag-top, 72%);
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 48px);
+  margin: 0;
+  text-align: center;
+  color: var(--ink);
+  font-size: clamp(16px, 1.6vw, 23px);
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 10px var(--glow);
+}
+
+.cue {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 62px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  text-shadow: 0 1px 8px var(--glow);
+  opacity: var(--cue, 1);
+}
+
+.cue-arrow {
+  animation: nudge 1.6s ease-in-out infinite;
+}
+
+@keyframes nudge {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(5px);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cue-arrow {
+    animation: none;
+  }
+}
+
+/* ---- Content: frosted windows over the night sky ------------------------------------------------ */
+
+.section {
+  position: relative;
+  padding: 14vh 24px;
+}
+
+.wrap {
+  max-width: 1140px;
+  margin: 0 auto;
+}
+
+.wrap.narrow {
+  max-width: 780px;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: clamp(28px, 5vw, 72px);
+  align-items: center;
+}
+
+.split.flip > .copy {
+  order: 2;
+}
+
+.copy p,
+.wrap > p {
+  max-width: 60ch;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.85);
+}
+
+.win {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(14px) saturate(1.25);
+  backdrop-filter: blur(14px) saturate(1.25);
+  border: 1px solid var(--rim);
+  border-radius: 6px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.win-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px;
+  border-bottom: 1px dashed var(--rim);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.win-body {
+  padding: 26px 28px 30px;
+}
+
+h2 {
+  margin: 0 0 22px;
+  font: 400 clamp(42px, 6vw, 84px) / 0.98 var(--serif);
+  letter-spacing: -0.01em;
+  color: #fbf3dc;
+  text-shadow: 0 3px 30px rgba(0, 0, 0, 0.7);
+}
+
+.num {
+  margin: 0 0 10px;
+  color: var(--yellow);
+  font-size: 16px;
+  letter-spacing: 0.1em;
+}
+
+.fine {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+code {
+  font: inherit;
+  color: var(--yellow);
+}
+
+/* ---- The panel: the plugin's own window, pinned while the scroll plays its steps sideways ------- */
+
+.pill-stage {
+  position: relative;
+  height: 560vh;
+  height: 560lvh;
+}
+
+.pill-pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100lvh;
+  overflow: hidden;
+  overflow: clip;
+  --pill-scale: 1;
+}
+
+.pill-label {
+  position: absolute;
+  top: calc(38px + 5vh);
+  left: 0;
+  right: 0;
+  width: fit-content;
+  margin: 0 auto;
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.pill-label .num {
+  display: inline;
+  margin-right: 12px;
+  font-size: inherit;
+}
+
+.pill-zone {
+  position: absolute;
+  top: calc(38px + 11vh);
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.pill-zone .panel {
+  transform: scale(var(--pill-scale));
+  transform-origin: 50% 0;
+}
+
+/* app.js sets --track-top to just under the panel, whose height changes with the step. */
+.pill-track {
+  position: absolute;
+  top: var(--track-top, 60vh);
+  left: 0;
+  display: flex;
+  gap: 56px;
+  will-change: transform;
+}
+
+.pill-step {
+  flex: none;
+  width: min(780px, 80vw);
+  text-align: center;
+  opacity: 0.2;
+}
+
+.pill-step h2 {
+  margin: 0 0 6px;
+  font-size: clamp(26px, 3.4vw, 46px);
+}
+
+.pill-step p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.pill-foot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(38px + 3vh);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.pill-foot > * {
+  width: fit-content;
+}
+
+.pill-dots {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pill-dots button {
+  font: inherit;
+  font-size: 16px;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  border-bottom: 2px solid rgba(240, 199, 94, 0.3);
+  padding: 5px 11px;
+  cursor: pointer;
+}
+
+.pill-dots button[aria-current="step"] {
+  color: var(--yellow);
+  border-bottom-color: var(--yellow);
+}
+
+.pill-hint {
+  margin: 0;
+  font-size: 15px;
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+/* The plugin window: Figma's light panel, drawn as it is in the plugin, with a glass rim so it sits
+   on the night sky. The states are driven by app.js through classes on #uki-panel. */
+.panel {
+  position: relative;
+  width: 400px;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #1e1e24;
+  font: 400 12px/1.5 var(--ui);
+  text-align: left;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.35),
+    0 30px 70px rgba(0, 0, 0, 0.6),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.panel * {
+  margin: 0;
+}
+
+.pn-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e6e6ec;
+}
+
+.pn-logo {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: #0d0f0c;
+  color: var(--yellow);
+}
+
+.pn-logo .spark {
+  width: 18px;
+  height: 18px;
+}
+
+.pn-title {
+  font-weight: 600;
+  font-size: 13px;
+  flex: 1;
+}
+
+.pn-title small {
+  font-weight: 400;
+  color: #6d6d7a;
+  margin-left: 6px;
+}
+
+.pn-scope {
+  display: inline-flex;
+  border: 1px solid #e6e6ec;
+  border-radius: 7px;
+  overflow: hidden;
+  font-size: 11px;
+}
+
+.pn-scope > * {
+  padding: 3px 8px;
+  font-style: normal;
+  color: #6d6d7a;
+}
+
+.pn-scope b {
+  background: #ececf0;
+  color: #1e1e24;
+}
+
+.pn-run {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 7px;
+  background: #0d0f0c;
+  color: #fff;
+  font: 600 12px var(--ui);
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.pn-run .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--yellow);
+}
+
+.pressed .pn-run {
+  transform: scale(0.95);
+  filter: brightness(1.25);
+}
+
+.running .pn-run .dot {
+  animation: pulse 0.9s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    transform: scale(0.5);
+    opacity: 0.4;
+  }
+}
+
+.pn-sel {
+  position: relative;
+  padding: 6px 14px;
+  min-height: 30px;
+  font-size: 11px;
+  color: #6d6d7a;
+  background: #f5f5f7;
+  border-bottom: 1px solid #e6e6ec;
+}
+
+.pn-sel b {
+  color: #1e1e24;
+}
+
+.pn-sel-on {
+  display: none;
+}
+
+.selected .pn-sel-on {
+  display: inline;
+}
+
+.selected .pn-sel-empty {
+  display: none;
+}
+
+.pn-progress {
+  height: 2px;
+  background: #e6e6ec;
+}
+
+.pn-progress i {
+  display: block;
+  height: 100%;
+  width: var(--pn-progress, 0%);
+  background: var(--yellow);
+}
+
+.pn-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 6px 10px 0;
+  border-bottom: 1px solid #e6e6ec;
+  color: #6d6d7a;
+}
+
+.pn-tabs span {
+  padding: 6px 10px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.pn-tabs .on {
+  color: #1e1e24;
+  font-weight: 600;
+  border-bottom-color: #1e1e24;
+}
+
+.pn-tabs em {
+  display: inline-block;
+  min-width: 16px;
+  padding: 0 4px;
+  margin-left: 4px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-style: normal;
+  background: #ececf0;
+  text-align: center;
+}
+
+.pn-body {
+  padding: 12px 14px 14px;
+}
+
+.pn-hero {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 10px;
+  border-radius: 10px;
+}
+
+.pn-ring {
+  position: relative;
+  width: 84px;
+  height: 84px;
+}
+
+.pn-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.pn-ring circle {
+  fill: none;
+  stroke-width: 9;
+  stroke-linecap: round;
+}
+
+.pn-ring .track {
+  stroke: #ececf0;
+}
+
+.pn-ring .bar {
+  stroke: var(--pn-ring-color, #f0c75e);
+  stroke-dasharray: 100;
+  stroke-dashoffset: var(--pn-ring, 100);
+}
+
+.pn-num {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  line-height: 1;
+}
+
+.pn-num b {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.pn-num span {
+  font-size: 9px;
+  color: #6d6d7a;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pn-head-copy h3 {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.pn-head-copy p {
+  color: #6d6d7a;
+  font-size: 11px;
+}
+
+.pn-cats {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.pn-cats li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 6px;
+  align-items: center;
+  padding: 5px 8px 6px;
+  border-radius: 6px;
+  border: 1px solid #e6e6ec;
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
+.pn-cats .t {
+  grid-column: 1 / -1;
+  height: 4px;
+  border-radius: 3px;
+  background: #ececf0;
+  overflow: hidden;
+}
+
+.pn-cats .t i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 3px;
+  background: var(--green);
+}
+
+.pn-cats b {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.pn-issues {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 5px;
+  opacity: 0;
+  max-height: 220px;
+  transition: opacity 0.3s ease, max-height 0.45s ease;
+}
+
+.scored .pn-issues {
+  opacity: 1;
+}
+
+/* The review step: the issues fold away so the panel stays short under the AI box. */
+.ai .pn-issues {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+}
+
+.pn-issues li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 8px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 9px;
+  border-radius: 7px;
+  border: 1px solid #e6e6ec;
+  transition: opacity 0.35s ease, transform 0.35s ease, max-height 0.35s ease;
+  max-height: 60px;
+}
+
+.pn-issues li.gone {
+  opacity: 0;
+  transform: translateX(14px);
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-color: transparent;
+  overflow: hidden;
+}
+
+.pn-issues li > i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.pn-issues .high > i {
+  background: var(--red);
+}
+
+.pn-issues .medium > i {
+  background: #f0c75e;
+}
+
+.pn-issues .low > i {
+  background: #3b82f6;
+}
+
+.pn-issues h4 {
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.pn-issues h4 span {
+  font-weight: 400;
+  color: #6d6d7a;
+}
+
+.pn-issues p {
+  font-size: 10.5px;
+  color: #6d6d7a;
+  line-height: 1.35;
+}
+
+.pn-fix {
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid #e6e6ec;
+  background: #fff;
+  font: 500 10.5px var(--ui);
+  color: #1e1e24;
+  white-space: nowrap;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.fixing .pn-fix#pn-fix {
+  background: var(--yellow);
+  border-color: transparent;
+  transform: scale(0.95);
+}
+
+.pn-ai {
+  margin-top: 10px;
+  border: 1px solid #e6e6ec;
+  border-radius: 9px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.5s ease, opacity 0.4s ease;
+}
+
+.ai .pn-ai {
+  max-height: 260px;
+  opacity: 1;
+}
+
+.pn-ai-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: #f5f5f7;
+  font-size: 10.5px;
+  color: #6d6d7a;
+}
+
+.pn-ai-bar b {
+  color: #1e1e24;
+}
+
+.pn-ai-body {
+  padding: 10px;
+  font-size: 11px;
+  line-height: 1.45;
+  --reveal: 0;
+  clip-path: inset(0 0 calc((1 - var(--reveal)) * 100%) 0);
+}
+
+.pn-ai-body h5 {
+  font-size: 11px;
+  margin: 0 0 3px;
+}
+
+.pn-ai-body h5 + p,
+.pn-ai-body ul {
+  margin: 0 0 8px;
+  padding-left: 16px;
+}
+
+.pn-ai-body p {
+  padding: 0;
+}
+
+/* The part of the panel the current step is about: a yellow ring, and a tag under it. */
+[data-target] {
+  position: relative;
+}
+
+[data-target]::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 10px;
+  box-shadow: 0 0 0 1.5px var(--yellow);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 2;
+}
+
+.pn-run[data-target]::before {
+  border-radius: 10px;
+}
+
+[data-target].is-target::before {
+  opacity: 1;
+  animation: ring 1.6s ease-in-out infinite;
+}
+
+@keyframes ring {
+  50% {
+    box-shadow: 0 0 0 1.5px var(--yellow), 0 0 0 5px rgba(240, 199, 94, 0.3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-target].is-target::before {
+    animation: none;
+  }
+}
+
+[data-target]::after {
+  content: "↑ " attr(data-tag);
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translate(-50%, -4px);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(13, 15, 12, 0.94);
+  color: var(--yellow);
+  font: 500 11px / 1.5 var(--mono);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 3;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+[data-target].is-target[data-tag]:not([data-tag=""])::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ---- Terminal lists: the audit log, the score meter, the fixes ---------------------------------- */
+
+.log,
+.meter,
+.flow {
+  list-style: none;
+  margin: 0;
+  padding: 22px 24px 26px;
+  font-size: 13.5px;
+  line-height: 1.85;
+  overflow-x: auto;
+}
+
+.log {
+  font-size: 13px;
+}
+
+.log li {
+  display: grid;
+  grid-template-columns: 16ch 10ch minmax(14ch, 1fr);
+  gap: 8px;
+  padding-left: 2ch;
+  white-space: nowrap;
+}
+
+.log li i {
+  white-space: normal;
+  line-height: 1.5;
+  padding-top: 0.2em;
+}
+
+@media (max-width: 860px) {
+  .log li {
+    grid-template-columns: 1fr auto;
+    gap: 0 12px;
+  }
+  .log li i {
+    grid-column: 1 / -1;
+    padding: 0 0 4px 2ch;
+  }
+}
+
+.log li.ev {
+  grid-template-columns: 1fr auto;
+  padding-left: 0;
+  margin-top: 6px;
+  color: #fbf3dc;
+}
+
+.log li.ev:first-child {
+  margin-top: 0;
+}
+
+.log li.ev span::before {
+  content: "$ ";
+  color: var(--yellow);
+}
+
+.log time {
+  color: var(--muted);
+}
+
+.log span {
+  color: var(--muted);
+}
+
+.log li.ev span {
+  color: #fbf3dc;
+}
+
+.log b,
+.flow b {
+  color: #fbf3dc;
+  font-weight: 600;
+}
+
+.log i,
+.flow i {
+  font-style: normal;
+  color: #cfa74f;
+}
+
+.meter li {
+  display: grid;
+  grid-template-columns: 7ch auto 1fr;
+  gap: 14px;
+  white-space: pre;
+}
+
+.meter .pct {
+  text-align: right;
+  color: var(--muted);
+}
+
+.meter .bar-cells {
+  color: #fbf3dc;
+  letter-spacing: 0.02em;
+}
+
+.meter .bar-cells i {
+  font-style: normal;
+  color: #5a4a1e;
+}
+
+.meter .what {
+  color: #cfa74f;
+}
+
+.meter .m-low .bar-cells {
+  color: var(--yellow);
+}
+
+.meter .m-end .bar-cells {
+  color: var(--red);
+}
+
+.meter li.heat {
+  margin-top: 12px;
+  grid-template-columns: 7ch 1fr;
+  white-space: normal;
+}
+
+.flow li {
+  display: grid;
+  grid-template-columns: 3ch auto;
+  column-gap: 8px;
+}
+
+.flow li i {
+  grid-column: 2;
+}
+
+.flow li i::before {
+  content: "└─ ";
+  color: #5a4a1e;
+}
+
+.flow li.alt {
+  margin-top: 8px;
+}
+
+.flow li.alt b {
+  color: var(--yellow);
+}
+
+.reveal.armed > li {
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  transition-delay: calc(var(--i, 0) * 70ms);
+}
+
+.reveal.on > li {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal.armed > li {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ---- Extras, install, end ------------------------------------------------------------------------ */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 8px;
+}
+
+.card .win-body {
+  padding: 20px 22px 24px;
+}
+
+.card p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin: 26px 0 30px;
+}
+
+.cta.big {
+  height: 48px;
+  padding: 0 22px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #fff1bf, #f0c75e 45%, #c9942a);
+  color: #0d0f0c;
+  font-size: 16px;
+  text-decoration: none;
+  box-shadow: 0 10px 30px rgba(240, 199, 94, 0.3);
+}
+
+.cta.big:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.ghost {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.prompt {
+  margin: 22px 0 26px;
+}
+
+.prompt pre {
+  margin: 0;
+  padding: 20px 22px 22px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font: inherit;
+  font-size: 14px;
+  color: #fbf3dc;
+}
+
+.copy-btn {
+  font: inherit;
+  font-size: 12px;
+  color: var(--yellow);
+  background: none;
+  border: 1px solid color-mix(in srgb, var(--yellow) 50%, transparent);
+  border-radius: 999px;
+  padding: 2px 12px;
+  cursor: pointer;
+}
+
+.copy-btn:hover {
+  background: color-mix(in srgb, var(--yellow) 14%, transparent);
+}
+
+.warning {
+  margin-top: 28px;
+  padding: 16px 20px;
+  border-left: 3px solid var(--yellow);
+  background: rgba(22, 18, 8, 0.64);
+  border-radius: 0 6px 6px 0;
+  font-size: 14px;
+}
+
+.end {
+  position: relative;
+  padding: 10vh 24px 120px;
+  text-align: center;
+}
+
+.end p {
+  width: fit-content;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.end-mark {
+  margin: 0 0 10px;
+  font: 400 clamp(30px, 4vw, 52px) / 1.1 var(--serif);
+  color: #fbf3dc;
+  text-shadow: 0 3px 30px rgba(0, 0, 0, 0.7);
+}
+
+/* ---- Small screens ------------------------------------------------------------------------------- */
+
+@media (min-width: 1181px) and (min-height: 900px) {
+  .pill-pin {
+    --pill-scale: 1.12;
+  }
+}
+
+@media (max-width: 860px) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+  .split.flip > .copy {
+    order: 0;
+  }
+  .cards {
+    grid-template-columns: 1fr;
+  }
+  .keyhints {
+    display: none;
+  }
+  .bar-bottom {
+    justify-content: flex-end;
+  }
+  .li span {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  body {
+    font-size: 14px;
+  }
+  .bar {
+    padding: 0 12px;
+  }
+  .path {
+    display: none;
+  }
+  .pill-pin {
+    --pill-scale: 0.86;
+  }
+  .pill-zone {
+    top: calc(38px + 8vh);
+  }
+  .pill-track {
+    gap: 28px;
+  }
+  .pill-dots button {
+    font-size: 15px;
+    padding: 5px 9px;
+  }
+  .pill-hint {
+    font-size: 13px;
+  }
+  .log,
+  .meter,
+  .flow {
+    font-size: 12px;
+    padding: 18px 16px 20px;
+  }
+}
+
+@media (max-width: 420px) {
+  .pill-pin {
+    --pill-scale: 0.78;
+  }
+}
+
+/* Short windows: a smaller panel so the caption and the step buttons still fit under it. */
+@media (max-height: 760px) {
+  .pill-pin {
+    --pill-scale: 0.8;
+  }
+  .pill-label {
+    top: calc(38px + 2vh);
+  }
+  .pill-zone {
+    top: calc(38px + 2vh + 28px);
+  }
+  .pill-step h2 {
+    margin-bottom: 6px;
+    font-size: clamp(24px, 5vh, 40px);
+  }
+  .pill-foot {
+    bottom: calc(38px + 2vh);
+  }
+  .pill-hint {
+    display: none;
+  }
+}
+
+@media (max-height: 600px) {
+  .pill-pin {
+    --pill-scale: 0.64;
+  }
+  .pill-label {
+    display: none;
+  }
+  .pill-zone {
+    top: calc(38px + 2vh);
+  }
+}
+
+@media (max-height: 440px) {
+  .pill-foot {
+    display: none;
+  }
+}
