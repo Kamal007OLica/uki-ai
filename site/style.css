@@ -715,7 +715,7 @@ code {
 
 .pn-ring circle {
   fill: none;
-  stroke-width: 9;
+  stroke-width: 7.5;
   stroke-linecap: round;
 }
 
@@ -734,22 +734,24 @@ code {
   inset: 0;
   display: grid;
   place-items: center;
+  align-content: center;
+  row-gap: 2px;
   text-align: center;
   line-height: 1;
 }
 
 .pn-num b {
   display: block;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
 
 .pn-num span {
-  font-size: 9px;
+  font-size: 8px;
   color: #6d6d7a;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
@@ -991,11 +993,10 @@ code {
 }
 
 [data-target]::after {
-  content: "↑ " attr(data-tag);
+  content: attr(data-tag);
   position: absolute;
-  top: calc(100% + 10px);
-  left: 50%;
-  transform: translate(-50%, -4px);
+  top: -11px;
+  right: 6px;
   padding: 2px 8px;
   border-radius: 999px;
   background: rgba(13, 15, 12, 0.94);
@@ -1006,12 +1007,37 @@ code {
   opacity: 0;
   pointer-events: none;
   z-index: 3;
+  transform: translateY(4px);
   transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
 [data-target].is-target[data-tag]:not([data-tag=""])::after {
   opacity: 1;
-  transform: translate(-50%, 0);
+  transform: none;
+}
+
+/* Tags that would otherwise land on a neighbour: under the run button and the selection bar, and
+   above the fix button (over the issue card's own top edge). */
+.pn-run[data-target]::after,
+.pn-sel[data-target]::after {
+  top: auto;
+  bottom: -11px;
+}
+
+.pn-run[data-target]::after {
+  bottom: -22px;
+  right: 0;
+}
+
+/* The run button's tag hangs over the selection bar, which is later in the DOM. */
+.pn-run.is-target {
+  z-index: 4;
+}
+
+.pn-fix[data-target]::after {
+  top: auto;
+  bottom: calc(100% + 7px);
+  right: 0;
 }
 
 /* ---- Terminal lists: the audit log, the score meter, the fixes ---------------------------------- */
